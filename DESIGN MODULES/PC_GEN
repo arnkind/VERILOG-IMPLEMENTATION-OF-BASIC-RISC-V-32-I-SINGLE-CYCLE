@@ -1,0 +1,16 @@
+module pc_gen (
+    input  wire        clk,
+    input  wire        reset,
+    input  wire        pc_en,     // allows stalling later
+    input  wire [31:0] pc_next,   // from control (for future branch support)
+    output reg  [31:0] pc
+);
+
+    always @(posedge clk or posedge reset) begin
+        if (reset)
+            pc <= 32'd0;          // word 0
+        else if (pc_en)
+            pc <= pc_next;        // normally pc + 1
+    end
+
+endmodule
