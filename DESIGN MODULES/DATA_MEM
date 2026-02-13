@@ -1,0 +1,95 @@
+module data_mem (
+    input  wire        clk,
+    input  wire        mem_write,
+    input  wire        mem_read,
+
+    input  wire [1:0]  load_size,
+    input  wire        load_unsigned,
+
+    input  wire [1:0]  store_size,
+
+    input  wire [31:0] addr,
+    input  wire [31:0] write_data,
+    output reg  [31:0] read_data
+);
+
+    reg [7:0] mem [0:1023];
+    integer i;
+
+    // byte address (limit memory range)
+    wire [9:0] byte_addr = addr[9:0];
+
+    // aligned addresses
+    wire [9:0] word_addr = {byte_addr[9:2], 2'b00};   // align to 4
+    wire [9:0] half_addr = {byte_addr[9:1], 1'b0};    // align to 2
+
+    initial begin
+        for (i = 0; i < 1024; i = i + 1)
+            mem[i] = 8'd0;
+    end
+
+    // ---------------- WRITE ----------------
+    always @(posedge clk) begin
+        if (mem_write) begin
+            case (store_size)
+
+                2'b00: begin // SB
+                    mem[byte_addr] <= write_data[7:0];
+                end
+
+                2'b01: begin // SH
+                    mem[half_addr]     <= write_data[7:0];
+                    mem[half_addr + 1] <= write_data[15:8];
+                end
+
+                2'b10: begin // SW
+                    mem[word_addr]     <= write_data[7:0];
+                    mem[word_addr + 1] <= write_data[15:8];
+                    mem[word_addr + 2] <= write_data[23:16];
+                    mem[word_addr + 3] <= write_data[31:24];
+                end
+
+            endcase
+        end
+    end
+
+    // ---------------- READ ----------------
+    always @(*) begin
+        read_data = 32'b0;
+
+        if (mem_read) begin
+            case (load_size)
+
+                // LB / LBU
+                2'b00: begin
+                    if (load_unsigned)
+                        read_data = {24'b0, mem[byte_addr]};
+                    else
+                        read_data = {{24{mem[byte_addr][7]}}, mem[byte_addr]};
+                end
+
+                // LH / LHU
+                2'b01: begin
+                    if (load_unsigned)
+                        read_data = {16'b0,
+                                     mem[half_addr + 1],
+                                     mem[half_addr]};
+                    else
+                        read_data = {{16{mem[half_addr + 1][7]}},
+                                     mem[half_addr + 1],
+                                     mem[half_addr]};
+                end
+
+                // LW (aligned)
+                2'b10: begin
+                    read_data = {mem[word_addr + 3],
+                                 mem[word_addr + 2],
+                                 mem[word_addr + 1],
+                                 mem[word_addr]};
+                end
+
+            endcase
+        end
+    end
+
+endmodule
