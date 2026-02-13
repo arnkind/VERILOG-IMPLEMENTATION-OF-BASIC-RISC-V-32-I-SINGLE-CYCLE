@@ -1,1 +1,48 @@
+module top (
+    input  wire        clk,
+    input  wire        reset,
 
+    output wire [31:0] pc,
+    output wire [31:0] instr,
+    output wire [31:0] alu_result,
+    output wire [4:0]  rs1_addr,
+    output wire [4:0]  rs2_addr,
+    output wire [4:0]  rd_addr,
+    output wire [31:0] rs1_val,
+    output wire [31:0] rs2_val,
+    output wire [31:0] rd_val,
+    output wire we,
+    output wire [31:0]imm_i,
+    output wire [31:0]imm_s,
+    output wire [31:0]imm_b,
+    output wire [31:0]imm_u,
+    output wire [31:0]imm_j
+);
+
+    data_path DUT (
+        .clk        (clk),
+        .reset      (reset),
+        .pc         (pc),
+        .instr      (instr),
+        .alu_result (alu_result),
+
+        .rs1_addr (rs1_addr),
+        .rs2_addr (rs2_addr),
+        .rd_addr  (rd_addr),
+        .rs1_val  (rs1_val),
+        .rs2_val  (rs2_val),
+        .rd_val   (rd_val),
+        .we(we),
+        
+        .imm_i(imm_i),
+        .imm_s(imm_s),
+        .imm_b(imm_b),
+        .imm_u(imm_u),
+        .imm_j(imm_j)
+    );
+
+   
+    
+    
+
+endmodule
