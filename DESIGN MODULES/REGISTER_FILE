@@ -1,0 +1,30 @@
+module register_file (
+    input  wire        clk,
+    input  wire        we,        // write enable
+    input  wire [4:0]  rs1,       // source register 1
+    input  wire [4:0]  rs2,       // source register 2
+    input  wire [4:0]  rd,        // destination register
+    input  wire [31:0] wd,        // write data
+
+    output wire [31:0] rd1,       // read data 1
+    output wire [31:0] rd2        // read data 2
+);
+
+    // 32 registers of 32-bit width
+    reg [31:0] regs [0:31];
+
+    // -------------------------
+    // Asynchronous read
+    // -------------------------
+    assign rd1 = (rs1 == 5'd0) ? 32'd0 : regs[rs1];
+    assign rd2 = (rs2 == 5'd0) ? 32'd0 : regs[rs2];
+
+    // -------------------------
+    // Synchronous write
+    // -------------------------
+    always @(posedge clk) begin
+        if (we && (rd != 5'd0))
+            regs[rd] <= wd;
+    end
+
+endmodule
