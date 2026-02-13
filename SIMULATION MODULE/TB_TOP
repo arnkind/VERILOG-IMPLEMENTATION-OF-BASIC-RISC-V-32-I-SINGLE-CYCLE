@@ -1,0 +1,147 @@
+`timescale 1ns/1ps
+
+module tb_top;
+
+      reg       clk;
+     reg        reset;
+
+     wire [31:0] pc;
+     wire [31:0] instr;
+     wire [31:0] alu_result;
+     wire [4:0]  rs1_addr;
+     wire [4:0]  rs2_addr;
+     wire [4:0]  rd_addr;
+     wire [31:0] rs1_val;
+     wire [31:0] rs2_val;
+     wire [31:0] rd_val;
+     wire we;
+     wire [31:0]imm_i;
+     wire [31:0]imm_s;
+     wire [31:0]imm_b;
+     wire [31:0]imm_u;
+     wire [31:0]imm_j;
+
+    top dut (
+        .clk        (clk),
+        .reset      (reset),
+        .pc         (pc),
+        .instr      (instr),
+        .alu_result (alu_result),
+
+        .rs1_addr (rs1_addr),
+        .rs2_addr (rs2_addr),
+        .rd_addr  (rd_addr),
+        .rs1_val  (rs1_val),
+        .rs2_val  (rs2_val),
+        .rd_val   (rd_val),
+        .we(we),
+        
+        .imm_i(imm_i),
+        .imm_s(imm_s),
+        .imm_b(imm_b),
+        .imm_u(imm_u),
+        .imm_j(imm_j)
+        
+    );
+    
+
+
+    // Clock
+    always #5 clk = ~clk;
+
+    initial begin
+        clk   = 0;
+        reset = 1;
+
+        // Reset
+        #20;
+        reset = 0;
+
+        // Preload registers
+        dut.DUT.RF.regs[1] = 32'd5;  // x1
+        dut.DUT.RF.regs[2] = 32'd5;   // x2
+
+
+          // Data memory preload
+          dut.DUT.DMEM.mem[2] = 8'd10; 
+          dut.DUT.DMEM.mem[3] = 8'd11; 
+          dut.DUT.DMEM.mem[10] =8'd20;
+          dut.DUT.DMEM.mem[11] =8'd16;
+          dut.DUT.DMEM.mem[14] =8'd5;
+          
+
+     
+
+        // Run
+        #800;
+        $finish;
+    end
+
+    // -------------------------
+    // Cycle-by-cycle monitor
+    // -------------------------
+    always @(posedge clk) begin
+        if (!reset) begin
+            
+            
+            $display(
+            "x1=%0d x2=%0d x3=%0d x4=%0d x5=%0d x6=%0d x7=%0d x8=%0d x9=%0d x10=%0d x11=%0d x12=%0d x13=%0d x14=%0d",
+            dut.DUT.RF.regs[1],
+            dut.DUT.RF.regs[2],
+            dut.DUT.RF.regs[3],
+            dut.DUT.RF.regs[4],
+            dut.DUT.RF.regs[5],
+            dut.DUT.RF.regs[6],
+            dut.DUT.RF.regs[7],
+            dut.DUT.RF.regs[8],
+            dut.DUT.RF.regs[9],
+            dut.DUT.RF.regs[10],
+            dut.DUT.RF.regs[11],
+            dut.DUT.RF.regs[12],
+            dut.DUT.RF.regs[13],
+            dut.DUT.RF.regs[14]);
+            
+            
+            
+            $display(
+                "PC=%0d | INSTR=%h | rs1=x%0d=%0d rs2=x%0d=%0d rd=x%0d <= %0d | ALU=%0d",
+                dut.DUT.pc,
+                dut.DUT.instr,
+                dut.DUT.rs1_addr, dut.DUT.rs1_val,
+                dut.DUT.rs2_addr, dut.DUT.rs2_val,
+                dut.DUT.rd_addr,  dut.DUT.rd_val,
+                dut.DUT.alu_result
+            );
+            
+           $display(
+"mem[0]=%0d mem[1]=%0d mem[2]=%0d mem[3]=%0d mem[4]=%0d mem[5]=%0d mem[6]=%0d mem[7]=%0d",
+dut.DUT.DMEM.mem[0],
+dut.DUT.DMEM.mem[1],
+dut.DUT.DMEM.mem[2],
+dut.DUT.DMEM.mem[3],
+dut.DUT.DMEM.mem[4],
+dut.DUT.DMEM.mem[5],
+dut.DUT.DMEM.mem[6],
+dut.DUT.DMEM.mem[7]
+);
+
+$display(
+"mem[8]=%0d mem[9]=%0d mem[10]=%0d mem[11]=%0d mem[12]=%0d mem[13]=%0d mem[14]=%0d mem[15]=%0d",
+dut.DUT.DMEM.mem[8],
+dut.DUT.DMEM.mem[9],
+dut.DUT.DMEM.mem[10],
+dut.DUT.DMEM.mem[11],
+dut.DUT.DMEM.mem[12],
+dut.DUT.DMEM.mem[13],
+dut.DUT.DMEM.mem[14],
+dut.DUT.DMEM.mem[15],
+
+);
+
+$display("--------------------------------------------");
+$display("--------------------------------------------");
+            
+        end
+    end
+
+endmodule
